@@ -11,6 +11,7 @@ export type Ad = {
     badge: "super" | "verified" | "none";
     description: string;
     userImage: string;
+    whatsapp: string;
 };
 
 export const ads: Ad[] = [
@@ -39,7 +40,8 @@ Speaker ok
 Batre normal
 Bisa cod atau diantar
 Kelengkapan laptop, charger`,
-userImage: "/ads/user.png",
+        userImage: "/ads/user.png",
+        whatsapp: "6285356078836",
     },
     {
         id: 2,
@@ -54,6 +56,7 @@ userImage: "/ads/user.png",
         badge: "verified",
         description: "loremipsum1",
         userImage: "/ads/user.png",
+        whatsapp: "6285356078836",
     },
     {
         id: 3,
@@ -68,5 +71,6 @@ userImage: "/ads/user.png",
         badge: "none",
         description: "loremipsum1",
         userImage: "/ads/user.png",
+        whatsapp: "6285356078836",
     },
 ];
