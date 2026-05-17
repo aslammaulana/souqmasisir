@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { BsLightningChargeFill } from "react-icons/bs";
+import { FiHeart } from "react-icons/fi";
 import type { Ad } from "./data";
 
 export default function AdsCard({ ad }: { ad: Ad }) {
@@ -10,7 +13,7 @@ export default function AdsCard({ ad }: { ad: Ad }) {
             className="flex flex-col rounded-lg overflow-hidden border-[1.5px] active:scale-[0.98] transition-transform duration-150"
             style={{
                 backgroundColor: ad.highlight ? "#e6efff" : "#ffffff",
-                borderColor: ad.highlight ? "var(--color-blue2)" : "var(--color-gray2)",
+                borderColor: ad.highlight ? "#5e99ef" : "var(--color-gray2)",
             }}
         >
             {/* Image */}
@@ -22,6 +25,14 @@ export default function AdsCard({ ad }: { ad: Ad }) {
                     className="object-cover"
                     sizes="50vw"
                 />
+                {/* Wishlist icon */}
+                <button
+                    className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-black/40"
+                    onClick={(e) => { e.preventDefault(); }}
+                    aria-label="Tambah ke wishlist"
+                >
+                    <FiHeart size={14} className="text-white" strokeWidth={2} />
+                </button>
             </div>
 
             {/* Highlight badge */}
@@ -52,7 +63,7 @@ export default function AdsCard({ ad }: { ad: Ad }) {
                                 className="h-[15px] w-auto object-contain"
                             />
                         )}
-                        <p className="text-[12px] fonzt-semibold text-black1">{ad.seller}</p>
+                        <p className="text-[12px] font-semibold text-black1">{ad.seller}</p>
                     </div>
                     <p className="text-[11px] text-black3 mt-0.5">{ad.time} · {ad.location}</p>
                 </div>
