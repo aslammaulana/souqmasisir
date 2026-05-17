@@ -19,7 +19,7 @@ export default function AdsCard({ ad }: { ad: Ad }) {
             {/* Image */}
             <div className="relative w-full aspect-square overflow-hidden">
                 <Image
-                    src={ad.image}
+                    src={ad.imageCover}
                     alt={ad.title}
                     fill
                     className="object-cover"
