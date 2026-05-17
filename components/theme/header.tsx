@@ -5,9 +5,9 @@ import { FiHeart, FiBell } from "react-icons/fi";
 
 export default function Header() {
     return (
-        <div className="w-full">
+        <>
             {/* Logo — scrolls away with the page */}
-            <div className="flex items-center gap-2 bg-white px-4 pt-4 pb-2">
+            <div className="w-full flex items-center gap-2 bg-white px-4 pt-4 pb-2 z-51">
                 <Image
                     src="/brand/logo-souqmasisir.png"
                     alt="SouqMasisir logo"
@@ -21,7 +21,7 @@ export default function Header() {
             </div>
 
             {/* Search bar + action icons — sticky */}
-            <div className="sticky top-0 z-50 bg-white px-4 py-2 shadow-sm">
+            <div className="w-full sticky top-0 z-50 bg-white px-4 py-2 shadow-sm">
                 <div className="flex items-center gap-3">
                     <div className="flex-1 flex items-center border border-gray1 rounded-xl px-4 h-11 bg-white">
                         <input
@@ -46,6 +46,7 @@ export default function Header() {
                     </button>
                 </div>
             </div>
-        </div>
+        </>
     );
+
 }

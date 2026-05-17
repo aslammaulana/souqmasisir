@@ -7,7 +7,7 @@ export default function AdsCard({ ad }: { ad: Ad }) {
     return (
         <Link
             href={`/ads/${ad.id}`}
-            className="flex flex-col rounded-lg overflow-hidden border-[1px] active:scale-[0.98] transition-transform duration-150"
+            className="flex flex-col rounded-lg overflow-hidden border-[1.5px] active:scale-[0.98] transition-transform duration-150"
             style={{
                 backgroundColor: ad.highlight ? "#e6efff" : "#ffffff",
                 borderColor: ad.highlight ? "var(--color-blue2)" : "var(--color-gray2)",
