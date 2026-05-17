@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import AdsDetail from "@/components/theme/listing/ads-detail";
+import AdsDetail from "@/components/theme/ads-detail";
 import { ads } from "@/components/theme/listing/data";
 
 type Props = {
