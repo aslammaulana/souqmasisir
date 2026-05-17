@@ -36,13 +36,24 @@ export default function AdsCard({ ad }: { ad: Ad }) {
             <div className="flex flex-col flex-1 px-2.5 pt-2.5 pb-3">
                 {/* Title + price push to top */}
                 <div className="flex-1">
-                    <p className="text-[11px] text-black1 leading-snug line-clamp-2">{ad.title}</p>
-                    <p className="text-[13px] font-bold text-black1 mt-1">{ad.price}</p>
+                    <p className="text-[11px] text-black2 leading-snug line-clamp-2">{ad.title}</p>
+                    <p className="text-[13px] font-bold text-black1 ">{ad.price}</p>
                 </div>
 
                 {/* Seller info pinned to bottom */}
                 <div className="mt-5">
-                    <p className="text-[11px] font-semibold text-black1">{ad.seller}</p>
+                    <div className="flex items-center gap-1">
+                        {ad.badge !== "none" && (
+                            <Image
+                                src={`/badge/${ad.badge}.png`}
+                                alt={ad.badge}
+                                width={ad.badge === "verified" ? 14 : 59}
+                                height={14}
+                                className="h-[14px] w-auto object-contain"
+                            />
+                        )}
+                        <p className="text-[11px] font-semibold text-black1">{ad.seller}</p>
+                    </div>
                     <p className="text-[10px] text-black3 mt-0.5">{ad.time} · {ad.location}</p>
                 </div>
             </div>

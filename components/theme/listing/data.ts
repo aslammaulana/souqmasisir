@@ -7,6 +7,7 @@ export type Ad = {
     time: string;
     location: string;
     highlight: boolean;
+    badge: "super" | "verified" | "none";
 };
 
 export const ads: Ad[] = [
@@ -19,6 +20,7 @@ export const ads: Ad[] = [
         time: "17 Mei 2026",
         location: "Hay Sabi",
         highlight: true,
+        badge: "super",
     },
     {
         id: 2,
@@ -29,6 +31,7 @@ export const ads: Ad[] = [
         time: "16 Mei 2026",
         location: "Darrasah",
         highlight: false,
+        badge: "verified",
     },
     {
         id: 3,
@@ -39,5 +42,6 @@ export const ads: Ad[] = [
         time: "2 Januari 2026",
         location: "Hay Asyir",
         highlight: false,
+        badge: "none",
     },
 ];
