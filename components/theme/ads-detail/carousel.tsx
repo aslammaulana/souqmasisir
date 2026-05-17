@@ -3,9 +3,8 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { IoChevronBack } from "react-icons/io5";
 import { motion, useMotionValue, animate } from "framer-motion";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaRegHeart } from "react-icons/fa";
 
 type Props = {
     images: string[];
@@ -121,7 +120,7 @@ export default function AdsCarousel({ images, title }: Props) {
                     border: "none", cursor: "pointer",
                 }}
             >
-                <IoChevronBack size={22} color="#fff" />
+                <FaArrowLeft size={22} color="#fff" />
             </button>
 
             {/* Wishlist overlay */}
@@ -138,7 +137,7 @@ export default function AdsCarousel({ images, title }: Props) {
                     border: "none", cursor: "pointer",
                 }}
             >
-                <FaArrowLeft  size={20} color="#fff" strokeWidth={1.8} />
+                <FaRegHeart   size={20} color="#fff" strokeWidth={1.8} />
             </button>
 
             {/* Dots */}
