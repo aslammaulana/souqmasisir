@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, animate } from "framer-motion";
 
 const REAL_SLIDES = [
     { id: 1, src: "/carousel/image2.png", alt: "Promo 1" },
@@ -25,11 +25,14 @@ const GAP = 12; // px
 
 export default function Carousel() {
     const [current, setCurrent] = useState(FIRST_REAL);
-    const [animated, setAnimated] = useState(true);
     const containerRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
     const isJumping = useRef(false);
 
+    const x = useMotionValue(0);
+
+    // Track container width
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
@@ -41,44 +44,55 @@ export default function Carousel() {
 
     const slideWidth = containerWidth * SLIDE_RATIO;
     const peekOffset = containerWidth > 0 ? (containerWidth - slideWidth) / 2 : 0;
-    const trackX = peekOffset - current * (slideWidth + GAP);
 
-    // After animating to a clone, silently jump to the matching real slide
-    const handleAnimationComplete = useCallback(() => {
-        if (isJumping.current) return;
-        if (current === 0) {
-            isJumping.current = true;
-            setAnimated(false);
-            setCurrent(LAST_REAL);
-        } else if (current === slides.length - 1) {
-            isJumping.current = true;
-            setAnimated(false);
-            setCurrent(FIRST_REAL);
-        }
-    }, [current]);
+    // Calculate target X for a given index
+    const getTargetX = useCallback(
+        (idx: number) => peekOffset - idx * (slideWidth + GAP),
+        [peekOffset, slideWidth]
+    );
 
-    // Re-enable animation after the silent jump renders
+    // Animate to current slide (skip if we just did a silent clone jump)
     useEffect(() => {
-        if (!animated) {
-            // Wait one frame then re-enable animation
-            const raf = requestAnimationFrame(() => {
-                setAnimated(true);
-                isJumping.current = false;
+        if (isJumping.current) {
+            isJumping.current = false;
+            return;
+        }
+        if (!isDragging && containerWidth > 0) {
+            animate(x, getTargetX(current), {
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+                onComplete: () => {
+                    // If we landed on a clone, silently jump to the real slide
+                    if (current === 0) {
+                        isJumping.current = true;
+                        x.set(getTargetX(LAST_REAL));
+                        setCurrent(LAST_REAL);
+                    } else if (current === slides.length - 1) {
+                        isJumping.current = true;
+                        x.set(getTargetX(FIRST_REAL));
+                        setCurrent(FIRST_REAL);
+                    }
+                },
             });
-            return () => cancelAnimationFrame(raf);
         }
-    }, [animated]);
+    }, [current, isDragging, containerWidth, getTargetX, x]);
 
-    const go = useCallback((dir: 1 | -1) => {
-        setCurrent((prev) => prev + dir);
-        setAnimated(true);
-    }, []);
+    // Go to next/prev
+    const go = useCallback(
+        (dir: 1 | -1) => {
+            setCurrent((prev) => prev + dir);
+        },
+        []
+    );
 
-    // Auto-play — always go next
+    // Auto-play — skip tick if user is currently dragging
     useEffect(() => {
-        const timer = setInterval(() => go(1), AUTOPLAY_DELAY);
+        const timer = setInterval(() => {
+            if (!isDragging) go(1);
+        }, AUTOPLAY_DELAY);
         return () => clearInterval(timer);
-    }, [go]);
+    }, [go, isDragging]);
 
     // Dot = which real slide is active (1-indexed → 0-indexed for dots)
     const realIndex =
@@ -94,20 +108,30 @@ export default function Carousel() {
             <div ref={containerRef} className="w-full overflow-hidden">
                 <motion.div
                     className="flex"
-                    style={{ gap: GAP }}
-                    animate={{ x: trackX }}
-                    transition={
-                        animated
-                            ? { type: "spring", stiffness: 260, damping: 28 }
-                            : { duration: 0 }
-                    }
-                    onAnimationComplete={handleAnimationComplete}
+                    style={{ gap: GAP, x }}
                     drag="x"
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.15}
+                    dragElastic={0.2}
+                    dragMomentum={false}
+                    onDragStart={() => setIsDragging(true)}
                     onDragEnd={(_, info) => {
-                        if (info.offset.x < -30) go(1);
-                        else if (info.offset.x > 30) go(-1);
+                        setIsDragging(false);
+                        const offset = info.offset.x;
+                        const velocity = info.velocity.x;
+
+                        let newIndex = current;
+
+                        // Fast swipe → use velocity
+                        if (Math.abs(velocity) > 500) {
+                            newIndex = velocity > 0 ? current - 1 : current + 1;
+                        }
+                        // Otherwise use offset threshold (30% of slide width)
+                        else if (Math.abs(offset) > slideWidth * 0.3) {
+                            newIndex = offset > 0 ? current - 1 : current + 1;
+                        }
+
+                        // Clamp to valid slide range (including clones for infinite loop)
+                        newIndex = Math.max(0, Math.min(slides.length - 1, newIndex));
+                        setCurrent(newIndex);
                     }}
                 >
                     {slides.map((slide, i) => {
@@ -128,7 +152,7 @@ export default function Carousel() {
                                     alt={slide.alt}
                                     width={1230}
                                     height={615}
-                                    className="w-full h-full object-cover select-none"
+                                    className="w-full h-full object-cover select-none pointer-events-none"
                                     priority={i === FIRST_REAL}
                                     draggable={false}
                                 />
@@ -139,14 +163,11 @@ export default function Carousel() {
             </div>
 
             {/* Dots — mapped to real slides only */}
-            <div className="flex  items-center justify-center gap-2 mt-3">
+            <div className="flex items-center justify-center gap-2 mt-3">
                 {REAL_SLIDES.map((_, i) => (
                     <button
                         key={i}
-                        onClick={() => {
-                            setAnimated(true);
-                            setCurrent(i + FIRST_REAL);
-                        }}
+                        onClick={() => setCurrent(i + FIRST_REAL)}
                         aria-label={`Slide ${i + 1}`}
                         className="rounded-full cursor-pointer h-2 transition-all duration-300"
                         style={{
