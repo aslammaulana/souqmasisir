@@ -10,6 +10,17 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Custom Colors */
+  --color-black1: #141414;
+  --color-black2: #4f4f4f;
+  --color-black3: #797979;
+
+  --color-blue1: #254ea0;
+  --color-blue2: #2e62d4;
+  --color-blue3: #e6efff;
+
+  --color-gray1: #cecece;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +33,4 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
