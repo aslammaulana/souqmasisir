@@ -7,7 +7,7 @@ export default function AdsCard({ ad }: { ad: Ad }) {
     return (
         <Link
             href={`/ads/${ad.id}`}
-            className="flex flex-col rounded-lg overflow-hidden border-[2px] border-gray1  active:scale-[0.98] transition-transform duration-150"
+            className="flex flex-col rounded-lg overflow-hidden border-[2px] border-gray2  active:scale-[0.98] transition-transform duration-150"
             style={{ backgroundColor: ad.highlight ? "#e6efff" : "#ffffff" }}
         >
             {/* Image */}
@@ -23,9 +23,9 @@ export default function AdsCard({ ad }: { ad: Ad }) {
 
             {/* Highlight badge */}
             {ad.highlight && (
-                <div className="flex items-center justify-center gap-1 bg-blue2 py-1.5 px-3">
-                    <BsLightningChargeFill className="text-white text-xs" />
-                    <span className="text-white text-xs font-semibold">Highlight</span>
+                <div className="flex items-center justify-center gap-1 bg-blue2 py-1 px-3">
+                    <BsLightningChargeFill className="text-white text-[10px]" />
+                    <span className="text-white text-[10px] font-semibold">Highlight</span>
                 </div>
             )}
 
@@ -33,8 +33,8 @@ export default function AdsCard({ ad }: { ad: Ad }) {
             <div className="flex flex-col flex-1 px-2.5 pt-2.5 pb-3">
                 {/* Title + price push to top */}
                 <div className="flex-1">
-                    <p className="text-xs text-black1 leading-snug line-clamp-2">{ad.title}</p>
-                    <p className="text-sm font-bold text-black1 mt-1">{ad.price}</p>
+                    <p className="text-[11px] text-black1 leading-snug line-clamp-2">{ad.title}</p>
+                    <p className="text-[12.5px] font-bold text-black1 mt-1">{ad.price}</p>
                 </div>
 
                 {/* Seller info pinned to bottom */}

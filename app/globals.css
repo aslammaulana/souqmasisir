@@ -21,6 +21,7 @@
   --color-blue3: #e6efff;
 
   --color-gray1: #cecece;
+  --color-gray2: #d1d1d1;
 }
 
 @media (prefers-color-scheme: dark) {
