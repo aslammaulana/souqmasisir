@@ -7,8 +7,11 @@ export default function AdsCard({ ad }: { ad: Ad }) {
     return (
         <Link
             href={`/ads/${ad.id}`}
-            className="flex flex-col rounded-lg overflow-hidden border-[2px] border-gray2  active:scale-[0.98] transition-transform duration-150"
-            style={{ backgroundColor: ad.highlight ? "#e6efff" : "#ffffff" }}
+            className="flex flex-col rounded-lg overflow-hidden border-[1px] active:scale-[0.98] transition-transform duration-150"
+            style={{
+                backgroundColor: ad.highlight ? "#e6efff" : "#ffffff",
+                borderColor: ad.highlight ? "var(--color-blue2)" : "var(--color-gray2)",
+            }}
         >
             {/* Image */}
             <div className="relative w-full aspect-square overflow-hidden">
@@ -34,7 +37,7 @@ export default function AdsCard({ ad }: { ad: Ad }) {
                 {/* Title + price push to top */}
                 <div className="flex-1">
                     <p className="text-[11px] text-black1 leading-snug line-clamp-2">{ad.title}</p>
-                    <p className="text-[12.5px] font-bold text-black1 mt-1">{ad.price}</p>
+                    <p className="text-[13px] font-bold text-black1 mt-1">{ad.price}</p>
                 </div>
 
                 {/* Seller info pinned to bottom */}
