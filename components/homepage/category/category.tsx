@@ -24,7 +24,7 @@ export default function CategorySection() {
                         </div>
 
                         {/* Label */}
-                        <span className="text-center text-[10px] leading-[1.3] text-black1 font-medium">
+                        <span className="text-center text-[10px] leading-[1.3] text-black2 font-medium">
                             {cat.label}
                         </span>
                     </Link>

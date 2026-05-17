@@ -2,6 +2,7 @@ import Header from "@/components/theme/header";
 import Footer from "@/components/theme/footer";
 import Carousel from "@/components/homepage/carousel";
 import CategorySection from "@/components/homepage/category/category";
+import ListingSection from "@/components/homepage/listing-section";
 
 export default function Home() {
   return (
@@ -13,7 +14,9 @@ export default function Home() {
       <main className="flex-1 pb-24 pt-2">
         <Carousel />
         <CategorySection />
+        <ListingSection />
       </main>
+
 
       {/* Sticky bottom navigation */}
       <Footer />

@@ -1,52 +1,79 @@
-# Carousel Component — Implementation Plan
+# Ads Listing Components — Implementation Plan
 
-## Pakai Framer Motion atau tidak?
+## Ringkasan
 
-### Opsi A: Framer Motion ✅ (Direkomendasikan)
-- **Pro:** Animasi slide yang halus dengan `drag` gesture (bisa swipe di mobile), spring physics yang natural, kode bersih
-- **Con:** Tambah dependency ~100KB, perlu install
-
-### Opsi B: CSS Transition + useState (Tanpa library)
-- **Pro:** Zero dependency tambahan, bundle lebih kecil
-- **Con:** Gesture swipe mobile harus manual (touch events), animasi lebih kaku
-
-**Rekomendasi: Framer Motion** — karena ini app marketplace mobile-first, swipe gesture sangat penting untuk UX. Bundle size-nya sepadan.
+Membuat dua komponen card iklan (`HighlightAds` & `StandardAds`) beserta `data.ts` dummy. Di homepage, iklan di-render dalam grid `cols-2` dengan iklan `highlight: true` tampil di baris paling atas (penuh / `col-span-2`).
 
 ---
 
 ## Proposed Changes
 
-### Install
+### Data Layer
+
+#### [NEW] `components/theme/listing/data.ts`
+
+Type dan array dummy ads:
+
+```ts
+export type Ad = {
+  id: number;
+  title: string;
+  image: string;        // path ke /public/ads/
+  price: string;        // format "Rp. X.XXX.XXX"
+  seller: string;
+  time: string;         // label waktu tampil
+  highlight: boolean;
+};
 ```
-npm install framer-motion
-```
+
+3 item sesuai permintaan (Tecno Spark · Honda Beat · Lenovo ThinkPad).
 
 ---
 
-### [NEW] `components/homepage/carousel.tsx`
+### Components
 
-Komponen carousel dengan:
-- **Slide images:** `image2.png`, `image3.png`, `image4.png` dari `/public/carousel/`
-- **Auto-play:** Ganti slide otomatis setiap 4 detik
-- **Swipe gesture:** Drag kiri/kanan via Framer Motion `drag="x"`
-- **Dots indicator:** Di bawah carousel, dot aktif lebih panjang (pill shape) warna `blue2`
-- **Layout:** Full width, `rounded-2xl`, gambar menggunakan `next/image` dengan `object-cover`
-- **Peek efek:** Slide kiri dan kanan sedikit terlihat (seperti referensi gambar)
+#### [NEW] `components/theme/listing/highlight-ads.tsx`
+
+Card **full-width** (col-span-2) untuk ads `highlight: true`.
+- Gambar atas, `aspect-[16/10]`, `object-cover`, `rounded-t-xl`
+- Banner biru `blue2` di bawah gambar: **⚡ Highlight**
+- Body: title (2 baris max, `line-clamp-2`), price bold `black1`, seller bold, time `black3`
+- Border `gray1`, rounded-xl, shadow-sm
+
+#### [NEW] `components/theme/listing/standard-ads.tsx`
+
+Card **half-width** (1 kolom dari grid-cols-2) untuk ads `highlight: false`.
+- Layout sama tanpa banner highlight
+- Gambar `aspect-square` atau `aspect-[4/3]`
+- Title, price, seller, time
 
 ---
 
-### [MODIFY] `app/page.tsx`
+### Homepage Integration
 
-Tambahkan `<Carousel />` di bawah `<Header />` sebelum konten utama.
+#### [MODIFY] `app/page.tsx`
+
+Tambahkan `<ListingSection />` di bawah `<CategorySection />`.
+
+#### [NEW] `components/homepage/listing-section.tsx`
+
+Komponen yang:
+1. Import semua `ads` dari `data.ts`
+2. Pisahkan `highlightAds` dan `standardAds`
+3. Render dalam `<section>`:
+   - Highlight ads: tiap item `col-span-2` di atas
+   - Standard ads: tiap item 1 kolom, grid `cols-2`
 
 ---
 
 ## Verification Plan
 
 ### Manual Verification
-1. Buka `http://localhost:3000`
-2. Pastikan carousel muncul di bawah header dengan 3 gambar
-3. Swipe kiri/kanan → slide berpindah dengan animasi smooth
-4. Tunggu 4 detik → slide berpindah otomatis
-5. Klik dots di bawah → langsung loncat ke slide tersebut
-6. Cek di mobile (DevTools device mode) → swipe gesture berfungsi
+
+1. Jalankan dev server: `npm run dev`
+2. Buka `http://localhost:3000`
+3. Scroll ke bawah CategorySection → pastikan muncul section listing iklan
+4. Cek card Tecno Spark (highlight) → tampil full-width dengan banner biru "⚡ Highlight"
+5. Cek card Honda Beat & Lenovo → tampil 2 kolom (grid-cols-2) di bawah
+6. Pastikan gambar, harga, seller, dan waktu tampil dengan benar
+7. Cek di DevTools mobile view (375px) → layout tetap rapi
