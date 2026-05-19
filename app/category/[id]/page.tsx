@@ -17,7 +17,7 @@ export default async function CategoryPage({ params }: Props) {
 
             {/* ── Sticky Header ── */}
             <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
-                <div className="flex items-center gap-3 px-4 h-14">
+                <div className="flex items-centexr gap-3 px-4 h-14">
                     <Link
                         href="/"
                         aria-label="Kembali"

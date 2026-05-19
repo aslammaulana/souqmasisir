@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 
@@ -75,5 +76,9 @@ export async function POST(req: NextRequest) {
         .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Invalidate homepage cache so new ad appears immediately
+    revalidatePath("/");
+
     return NextResponse.json(data, { status: 201 });
 }

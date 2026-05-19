@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
 
@@ -65,6 +66,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!data) return NextResponse.json({ error: "Ad not found or not yours" }, { status: 404 });
+
+    // Invalidate homepage cache so changes appear immediately
+    revalidatePath("/");
+
     return NextResponse.json(data);
 }
 
@@ -84,5 +89,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
         .eq("user_id", userId);  // ensure ownership
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Invalidate homepage cache so ad is removed immediately
+    revalidatePath("/");
+
     return NextResponse.json({ success: true });
 }
