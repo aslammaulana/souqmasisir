@@ -1,43 +1,35 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
 import { HiArrowLeft, HiChevronRight, HiUser } from "react-icons/hi";
 import Footer from "@/components/theme/footer";
+import { auth } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
 import { formatJoinDate } from "@/lib/format-date";
-import { toAdSlug } from "@/lib/ad-slug";
+import ProfileAdsList from "@/components/profile/profile-ads-list";
+import ProfileAdsSkeleton from "@/components/profile/profile-ads-skeleton";
+
+export const dynamic = "force-dynamic";
 
 const STEPS_LEFT = 4;
 
-type SupabaseAd = {
-    id: string;
-    title: string;
-    cover_image: string;
-    price: number;
-    lokasi: string;
-    created_at: string;
-};
+export default async function ProfilePage() {
+    const session = await auth();
+    if (!session?.user) redirect("/login");
 
-export default function ProfilePage() {
-    const { data: session, status } = useSession();
-    const name = session?.user?.name ?? "Guest";
-    const imageUrl = session?.user?.image ?? null;
-    const [joinDate, setJoinDate] = useState("");
-    const [myAds, setMyAds] = useState<SupabaseAd[]>([]);
+    const userId = session.user.id!;
+    const name = session.user.name ?? "Guest";
+    const imageUrl = session.user.image ?? null;
 
-    useEffect(() => {
-        if (status !== "authenticated") return;
-        // Fetch join date
-        fetch("/api/user/profile")
-            .then((r) => r.json())
-            .then((d) => setJoinDate(formatJoinDate(d.created_at)));
-        // Fetch real ads
-        fetch("/api/ads")
-            .then((r) => r.json())
-            .then((d) => { if (Array.isArray(d)) setMyAds(d); });
-    }, [status]);
+    // Fetch join date from Supabase (server-side, no client fetch needed)
+    const { data: dbUser } = await supabaseAdmin
+        .from("users")
+        .select("created_at")
+        .eq("id", userId)
+        .single();
+
+    const joinDate = formatJoinDate(dbUser?.created_at);
 
     return (
         <div className="flex flex-col max-w-lg mx-auto min-h-screen bg-white pb-24">
@@ -68,7 +60,7 @@ export default function ProfilePage() {
                     {imageUrl ? (
                         <Image src={imageUrl} alt={name} width={80} height={80} className="object-cover w-full h-full" />
                     ) : (
-                        <HiUser size={44} className="text-blue2" />
+                        <HiUser size={44} className="text-blue-500" />
                     )}
                 </div>
                 <h1 className="text-gray-900 font-bold text-2xl mb-1">{name}</h1>
@@ -85,33 +77,12 @@ export default function ProfilePage() {
             {/* ── Divider ── */}
             <div className="border-t border-gray-100 mx-5 my-2" />
 
-            {/* ── My Ads ── */}
+            {/* ── Iklan Saya — Streaming ── */}
             <div className="px-5 pt-3">
                 <h2 className="text-gray-900 font-bold text-base mb-4">Iklan Saya</h2>
-                <div className="flex flex-col gap-3">
-                    {myAds.length > 0 ? (
-                        myAds.map((ad) => (
-                            <Link
-                                key={ad.id}
-                                href={`/ads/${toAdSlug(ad.title, ad.id)}`}
-                                className="flex flex-row rounded-2xl overflow-hidden border border-gray-200 bg-white active:scale-[0.98] transition-transform duration-150"
-                            >
-                                <div className="relative w-28 shrink-0 self-stretch overflow-hidden bg-gray-100">
-                                    {ad.cover_image && (
-                                        <Image src={ad.cover_image} alt={ad.title} fill className="object-cover" sizes="112px" />
-                                    )}
-                                </div>
-                                <div className="flex flex-col flex-1 px-3 py-3 justify-between">
-                                    <p className="text-[13px] text-black2 leading-snug line-clamp-2">{ad.title}</p>
-                                    <p className="text-[15px] font-bold text-black1 mt-1">EGP {ad.price.toLocaleString()}</p>
-                                    <p className="text-[11px] text-black3 text-right mt-2">{ad.lokasi}</p>
-                                </div>
-                            </Link>
-                        ))
-                    ) : (
-                        <p className="text-gray-400 text-sm text-center py-8">Belum ada iklan</p>
-                    )}
-                </div>
+                <Suspense fallback={<ProfileAdsSkeleton />}>
+                    <ProfileAdsList />
+                </Suspense>
             </div>
 
             <Footer />
