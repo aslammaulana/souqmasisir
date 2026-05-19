@@ -6,12 +6,12 @@ export type Category = {
 };
 
 export const categories: Category[] = [
-    { id: 1, label: "View All", image: "/category/cat-sample1.png", href: "/categories" },
-    { id: 2, label: "Makanan & Minuman", image: "/category/cat-sample2.png", href: "/categories/makanan-minuman" },
-    { id: 3, label: "Jasa Taushil", image: "/category/cat-sample1.png", href: "/categories/jasa-taushil" },
-    { id: 4, label: "Jasa Harian", image: "/category/cat-sample2.png", href: "/categories/jasa-harian" },
-    { id: 5, label: "Elektronik", image: "/category/cat-sample1.png", href: "/categories/elektronik" },
-    { id: 6, label: "Kebutuhan Rumah", image: "/category/cat-sample2.png", href: "/categories/kebutuhan-rumah" },
-    { id: 7, label: "Lowongan & Jasa", image: "/category/cat-sample1.png", href: "/categories/lowongan-jasa" },
-    { id: 8, label: "Properti & Sewa", image: "/category/cat-sample2.png", href: "/categories/properti-sewa" },
+    { id: 0, label: "Semua", image: "/category/cat-sample1.png", href: "/ads" },
+    { id: 1, label: "Makanan & Minuman", image: "/category/cat-sample2.png", href: "/category/1" },
+    { id: 2, label: "Properti & Sewa", image: "/category/cat-sample1.png", href: "/category/2" },
+    { id: 3, label: "Jasa Taushil", image: "/category/cat-sample2.png", href: "/category/3" },
+    { id: 4, label: "Jasa Harian", image: "/category/cat-sample1.png", href: "/category/4" },
+    { id: 5, label: "Elektronik", image: "/category/cat-sample2.png", href: "/category/5" },
+    { id: 6, label: "Perabot Rumah", image: "/category/cat-sample1.png", href: "/category/6" },
+    { id: 7, label: "Lowongan & Jasa", image: "/category/cat-sample2.png", href: "/category/7" },
 ];

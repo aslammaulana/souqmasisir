@@ -1,25 +1,38 @@
 export type NewAdForm = {
+    // Meta
     category: string;
-    coverPhoto: File | null;
-    photo1: File | null;
-    photo2: File | null;
-    kondisi: string;
+    categoryId: number;
+
+    // Step 1 — details
+    subcategory: string;
+    kondisi: string;   // "Baru" | "Bekas"
     lokasi: string;
-    googleMapsUrl: string;
+    lokasiMaps: string;   // optional Google Maps URL
+
+    // Step 2 — photos (stored as uploaded URLs)
+    coverImage: string;
+    image1: string;
+    image2: string;
+
+    // Step 3 — description
     title: string;
     description: string;
-    harga: string;
+    price: string;
+    whatsapp: string;
 };
 
 export const EMPTY_FORM: NewAdForm = {
     category: "",
-    coverPhoto: null,
-    photo1: null,
-    photo2: null,
+    categoryId: 0,
+    subcategory: "",
     kondisi: "",
     lokasi: "",
-    googleMapsUrl: "",
+    lokasiMaps: "",
+    coverImage: "",
+    image1: "",
+    image2: "",
     title: "",
     description: "",
-    harga: "",
+    price: "",
+    whatsapp: "",
 };

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, use } from "react";
-import Link from "next/link";
+import { useState, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { HiArrowLeft } from "react-icons/hi";
+import { categories } from "@/components/post-ads/data";
 import StepIndicator from "@/components/post-ads/steps/step-indicator";
-import Step1Photos from "@/components/post-ads/steps/step1-photos";
-import Step2Details from "@/components/post-ads/steps/step2-details";
+import Step1Details from "@/components/post-ads/steps/step1-details";
+import Step2Photos from "@/components/post-ads/steps/step2-photos";
 import Step3Description from "@/components/post-ads/steps/step3-description";
 import { EMPTY_FORM, type NewAdForm } from "@/components/post-ads/types";
 
@@ -19,12 +19,26 @@ export default function NewAdCategoryPage({
 }) {
     const router = useRouter();
     const { category } = use(params);
-    const categoryLabel = decodeURIComponent(category).replace(/-/g, " ");
+    // The URL slug is actually the SUBCATEGORY (set by popup-new.tsx)
+    const subcategoryLabel = decodeURIComponent(category).replace(/-/g, " ");
+
+    // Find parent category by searching through all subcategories
+    const parentCategory = useMemo(() =>
+        categories.find((c) =>
+            c.subcategories.some(
+                (s) => s.label.toLowerCase() === subcategoryLabel.toLowerCase()
+            )
+        ),
+        [subcategoryLabel]
+    );
 
     const [step, setStep] = useState<Step>(1);
+    const [submitting, setSubmitting] = useState(false);
     const [form, setForm] = useState<NewAdForm>({
         ...EMPTY_FORM,
-        category: categoryLabel,
+        category: parentCategory?.label ?? "",
+        categoryId: parentCategory?.id ?? 0,
+        subcategory: subcategoryLabel,
     });
 
     const updateForm = (updates: Partial<NewAdForm>) => {
@@ -36,15 +50,53 @@ export default function NewAdCategoryPage({
         else setStep((s) => (s - 1) as Step);
     };
 
-    const handleContinue = () => {
-        if (step < 3) {
-            setStep((s) => (s + 1) as Step);
-        } else {
-            // TODO: submit form
-            console.log("Submit:", form);
-            router.push("/myads");
+    // Validate current step before advancing
+    const canContinue = (): boolean => {
+        if (step === 1) return !!form.kondisi && !!form.lokasi;
+        if (step === 2) return !!form.coverImage;
+        if (step === 3) return !!form.title && !!form.description && !!form.price && !!form.whatsapp;
+        return false;
+    };
+
+    const handleSubmit = async () => {
+        setSubmitting(true);
+        try {
+            const res = await fetch("/api/ads", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    category_id: form.categoryId,
+                    subcategory: form.subcategory,
+                    kondisi: form.kondisi,
+                    lokasi: form.lokasi,
+                    lokasi_maps: form.lokasiMaps || null,
+                    cover_image: form.coverImage,
+                    images: [form.image1, form.image2].filter(Boolean),
+                    title: form.title,
+                    description: form.description,
+                    price: Number(form.price),
+                    whatsapp: form.whatsapp,
+                }),
+            });
+
+            if (res.ok) {
+                router.push("/myads");
+            } else {
+                const err = await res.json();
+                alert("Gagal pasang iklan: " + (err.error ?? "Unknown error"));
+            }
+        } finally {
+            setSubmitting(false);
         }
     };
+
+    const handleContinue = () => {
+        if (!canContinue()) return;
+        if (step < 3) setStep((s) => (s + 1) as Step);
+        else handleSubmit();
+    };
+
+    const buttonLabel = submitting ? "Menerbitkan..." : step < 3 ? "Lanjut" : "Pasang Iklan";
 
     return (
         <div className="flex flex-col max-w-lg mx-auto min-h-screen bg-white">
@@ -58,7 +110,7 @@ export default function NewAdCategoryPage({
                 >
                     <HiArrowLeft size={22} className="text-gray-900" />
                 </button>
-                <span className="text-gray-900 font-bold text-base capitalize">{categoryLabel}</span>
+                <span className="text-gray-900 font-bold text-base capitalize">{subcategoryLabel}</span>
             </div>
 
             {/* ── Step Indicator ── */}
@@ -66,19 +118,20 @@ export default function NewAdCategoryPage({
 
             {/* ── Step Content ── */}
             <div className="flex-1 overflow-y-auto pb-32">
-                {step === 1 && <Step1Photos form={form} onChange={updateForm} />}
-                {step === 2 && <Step2Details form={form} onChange={updateForm} />}
+                {step === 1 && <Step1Details form={form} onChange={updateForm} />}
+                {step === 2 && <Step2Photos form={form} onChange={updateForm} />}
                 {step === 3 && <Step3Description form={form} onChange={updateForm} />}
             </div>
 
-            {/* ── Continue Button — sticky bottom ── */}
+            {/* ── Sticky Bottom Button ── */}
             <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto px-5 py-4 bg-white border-t border-gray-100">
                 <button
                     onClick={handleContinue}
-                    className="w-full py-4 rounded-xl text-white font-semibold text-base transition active:scale-[0.98]"
+                    disabled={!canContinue() || submitting}
+                    className="w-full py-4 rounded-xl text-white font-semibold text-base transition active:scale-[0.98] disabled:opacity-40"
                     style={{ backgroundColor: "#132a4c" }}
                 >
-                    Continue
+                    {buttonLabel}
                 </button>
             </div>
         </div>

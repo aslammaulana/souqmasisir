@@ -14,3 +14,17 @@ Moderasi
 
 1. Pernah kena Report/Spam
 2. Tidak ada foto/foto tidak sesuai 
+
+
+
+---
+
+image-cover
+images
+kondisi [baru, bekas]
+lokasi [Hay Asyir, Darrasah, Hay Sabi, Nasr City, Abbasiyah]
+lokasi-maps: string
+title-ad: string
+description: string
+price: number
+whatsapp-number: number

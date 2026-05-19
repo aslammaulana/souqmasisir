@@ -59,7 +59,7 @@ export default function LoginPage() {
 
                 {/* Continue with Google */}
                 <button
-                    onClick={() => signIn("google", { callbackUrl: "/" })}
+                    onClick={() => signIn("google", { callbackUrl: "/account" })}
                     className="w-full flex items-center gap-3 bg-white text-gray-900 rounded-xl px-5 py-4 font-semibold text-sm shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all border-0"
                 >
                     <FcGoogle size={20} className="shrink-0" />
