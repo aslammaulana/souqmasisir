@@ -1,18 +1,33 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { HiArrowLeft, HiChevronRight, HiUser } from "react-icons/hi";
 import Footer from "@/components/theme/footer";
 import SmallAdsCard from "@/components/theme/listing/small-ads-card";
 import { ads } from "@/components/theme/listing/data";
+import { formatJoinDate } from "@/lib/format-date";
 
-const USER_NAME = "DepoLaptop.id";
 const STEPS_LEFT = 4;
 
-// Filter ads belonging to this user
-const myAds = ads.filter((ad) => ad.seller === USER_NAME);
-
 export default function ProfilePage() {
+    const { data: session, status } = useSession();
+    const name = session?.user?.name ?? "Guest";
+    const imageUrl = session?.user?.image ?? null;
+    const [joinDate, setJoinDate] = useState("");
+
+    useEffect(() => {
+        if (status !== "authenticated") return;
+        fetch("/api/user/profile")
+            .then((r) => r.json())
+            .then((d) => setJoinDate(formatJoinDate(d.created_at)));
+    }, [status]);
+
+    // Filter ads belonging to this user (when real API: filter by user id)
+    const myAds = ads.filter((ad) => ad.seller === "DepoLaptop.id");
+
     return (
         <div className="flex flex-col max-w-lg mx-auto min-h-screen bg-white pb-24">
 
@@ -40,14 +55,18 @@ export default function ProfilePage() {
             <div className="px-5 pt-6 pb-4">
                 {/* Avatar */}
                 <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mb-4 overflow-hidden">
-                    <HiUser size={44} className="text-blue2" />
+                    {imageUrl ? (
+                        <Image src={imageUrl} alt={name} width={80} height={80} className="object-cover w-full h-full" />
+                    ) : (
+                        <HiUser size={44} className="text-blue2" />
+                    )}
                 </div>
 
                 {/* Name */}
-                <h1 className="text-gray-900 font-bold text-2xl mb-1">{USER_NAME}</h1>
+                <h1 className="text-gray-900 font-bold text-2xl mb-1">{name}</h1>
 
                 {/* Joined */}
-                <p className="text-gray-400 text-sm mb-5">Bergabung 1 Minggu yang lalu</p>
+                <p className="text-gray-400 text-sm mb-5">{joinDate}</p>
 
                 {/* Edit Profile button */}
                 <Link

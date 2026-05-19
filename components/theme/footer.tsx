@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { HiOutlineHome, HiHome } from "react-icons/hi";
 import { HiOutlineChatBubbleLeftRight, HiChatBubbleLeftRight } from "react-icons/hi2";
 import { BsBoxSeam, BsBoxSeamFill } from "react-icons/bs";
@@ -35,7 +36,7 @@ const tabs = [
         label: "My Account",
         icon: <HiOutlineUser size={26} />,
         activeIcon: <HiUser size={26} />,
-        match: (p: string) => p.startsWith("/account"),
+        match: (p: string) => p.startsWith("/account") || p === "/login",
     },
 ];
 
@@ -44,13 +45,18 @@ const rightTabs = tabs.slice(2);
 
 export default function Footer() {
     const pathname = usePathname();
+    const { status } = useSession();
 
     const renderTab = (tab: typeof tabs[0]) => {
         const isActive = tab.match(pathname);
+        // Show /login ONLY when we are sure the user is not logged in
+        const href = tab.label === "My Account"
+            ? (status === "unauthenticated" ? "/login" : "/account")
+            : (tab.href ?? "/");
         return (
             <Link
-                key={tab.href + tab.label}
-                href={tab.href}
+                key={href + tab.label}
+                href={href}
                 className="flex flex-col items-center gap-0.5 flex-1 transition-colors"
             >
                 <span className={isActive ? "text-blue2" : "text-black3"}>

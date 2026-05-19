@@ -7,6 +7,7 @@ import { HiOutlineInformationCircle } from "react-icons/hi2";
 import { BsPhone } from "react-icons/bs";
 import { FcGoogle } from "react-icons/fc";
 import { MdOutlineEmail } from "react-icons/md";
+import { signIn } from "next-auth/react";
 import Footer from "@/components/theme/footer";
 
 export default function LoginPage() {
@@ -57,7 +58,10 @@ export default function LoginPage() {
                 </button>
 
                 {/* Continue with Google */}
-                <button className="w-full flex items-center gap-3 bg-white text-gray-900 rounded-xl px-5 py-4 font-semibold text-sm shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all border-0">
+                <button
+                    onClick={() => signIn("google", { callbackUrl: "/" })}
+                    className="w-full flex items-center gap-3 bg-white text-gray-900 rounded-xl px-5 py-4 font-semibold text-sm shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all border-0"
+                >
                     <FcGoogle size={20} className="shrink-0" />
                     Continue with Google
                 </button>
