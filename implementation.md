@@ -1,79 +1,94 @@
-# Ads Listing Components — Implementation Plan
+# Post Ads — 3-Step Form Plan
 
-## Ringkasan
+## Rekomendasi Arsitektur
 
-Membuat dua komponen card iklan (`HighlightAds` & `StandardAds`) beserta `data.ts` dummy. Di homepage, iklan di-render dalam grid `cols-2` dengan iklan `highlight: true` tampil di baris paling atas (penuh / `col-span-2`).
+**Gunakan satu dynamic page** `/myads/new/[category]/page.tsx` dengan `step` state (bukan 3 URL terpisah).
+
+### Alasan:
+- Form data (foto, kondisi, judul, harga) perlu di-share antar step → lebih mudah dengan satu `useState`
+- Header dan step indicator sama di setiap step
+- Navigasi antar step lebih smooth (tidak ada page reload)
+- Back button bisa dikontrol manual (kembali ke step sebelumnya, bukan ke URL sebelumnya)
+- URL nested dalam seperti `/attribute/detail/description` tidak natural dan sulit di-maintain
 
 ---
 
-## Proposed Changes
+## URL Structure
 
-### Data Layer
+```
+/myads/new/[category]        ← dynamic segment dari subkategori yang dipilih
+```
 
-#### [NEW] `components/theme/listing/data.ts`
+Contoh: `/myads/new/handphone`, `/myads/new/makanan-siap-saji`
 
-Type dan array dummy ads:
+---
+
+## File Structure
+
+```
+app/myads/new/
+├── page.tsx                     ← grid kategori + popup subkategori
+└── [category]/
+    └── page.tsx                 ← 3-step form (step dikelola dengan useState)
+
+components/post-ads/
+├── data.ts                      ← data kategori & subkategori
+├── popup-new.tsx                ← bottom sheet popup subkategori
+└── steps/
+    ├── step-indicator.tsx       ← komponen 01 ------ 02 ------ 03
+    ├── step1-photos.tsx         ← Upload Cover Photo + Photo 1 + Photo 2
+    ├── step2-details.tsx        ← Kondisi (dropdown), Lokasi, Google Maps URL
+    └── step3-description.tsx    ← Title, Description, Harga
+```
+
+---
+
+## Step Details
+
+### Step 1 — Upload Photo
+- Cover Photo (wajib) — upload gambar utama
+- Photo 1 & Photo 2 (opsional)
+- Tombol: **Continue**
+
+### Step 2 — Item Details
+- **Kondisi** — dropdown: Baru / Bekas
+- **Lokasi** — dropdown area (Hay Asyir, Darrasah, Hay Sabi, dll.)
+- **Lokasi Google Maps** — input URL (opsional)
+- Tombol: **Continue**
+
+### Step 3 — Description
+- **Title of ad*** — input teks, max 30 char, counter `10/30`
+- **Description*** — textarea, max 4096 char
+- **Harga*** — input angka dengan prefix `Rp.`
+- Tombol: **Continue** (submit iklan)
+
+---
+
+## Form State (satu objek)
 
 ```ts
-export type Ad = {
-  id: number;
+type NewAdForm = {
+  category: string;
+  coverPhoto: File | null;
+  photo1: File | null;
+  photo2: File | null;
+  kondisi: string;
+  lokasi: string;
+  googleMapsUrl: string;
   title: string;
-  image: string;        // path ke /public/ads/
-  price: string;        // format "Rp. X.XXX.XXX"
-  seller: string;
-  time: string;         // label waktu tampil
-  highlight: boolean;
+  description: string;
+  harga: string;
 };
 ```
 
-3 item sesuai permintaan (Tecno Spark · Honda Beat · Lenovo ThinkPad).
-
 ---
 
-### Components
+## Navigation Flow
 
-#### [NEW] `components/theme/listing/highlight-ads.tsx`
-
-Card **full-width** (col-span-2) untuk ads `highlight: true`.
-- Gambar atas, `aspect-[16/10]`, `object-cover`, `rounded-t-xl`
-- Banner biru `blue2` di bawah gambar: **⚡ Highlight**
-- Body: title (2 baris max, `line-clamp-2`), price bold `black1`, seller bold, time `black3`
-- Border `gray1`, rounded-xl, shadow-sm
-
-#### [NEW] `components/theme/listing/standard-ads.tsx`
-
-Card **half-width** (1 kolom dari grid-cols-2) untuk ads `highlight: false`.
-- Layout sama tanpa banner highlight
-- Gambar `aspect-square` atau `aspect-[4/3]`
-- Title, price, seller, time
-
----
-
-### Homepage Integration
-
-#### [MODIFY] `app/page.tsx`
-
-Tambahkan `<ListingSection />` di bawah `<CategorySection />`.
-
-#### [NEW] `components/homepage/listing-section.tsx`
-
-Komponen yang:
-1. Import semua `ads` dari `data.ts`
-2. Pisahkan `highlightAds` dan `standardAds`
-3. Render dalam `<section>`:
-   - Highlight ads: tiap item `col-span-2` di atas
-   - Standard ads: tiap item 1 kolom, grid `cols-2`
-
----
-
-## Verification Plan
-
-### Manual Verification
-
-1. Jalankan dev server: `npm run dev`
-2. Buka `http://localhost:3000`
-3. Scroll ke bawah CategorySection → pastikan muncul section listing iklan
-4. Cek card Tecno Spark (highlight) → tampil full-width dengan banner biru "⚡ Highlight"
-5. Cek card Honda Beat & Lenovo → tampil 2 kolom (grid-cols-2) di bawah
-6. Pastikan gambar, harga, seller, dan waktu tampil dengan benar
-7. Cek di DevTools mobile view (375px) → layout tetap rapi
+```
+/myads/new  →  klik kategori  →  popup subkategori  →  klik subkategori
+→  /myads/new/[category]  (step=1)
+→  Continue  →  (step=2)
+→  Continue  →  (step=3)
+→  Continue  →  Submit & redirect ke /myads
+```
