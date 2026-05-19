@@ -1,12 +1,34 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { HiX } from "react-icons/hi";
+import { HiX, HiChevronDown } from "react-icons/hi";
 import { HiOutlineCamera } from "react-icons/hi2";
 import Footer from "@/components/theme/footer";
+
+const DIAL_CODES = [
+    { code: "+62", flag: "🇮🇩", label: "Indonesia" },
+    { code: "+20", flag: "🇪🇬", label: "Mesir" },
+    { code: "+60", flag: "🇲🇾", label: "Malaysia" },
+    { code: "+66", flag: "🇹🇭", label: "Thailand" },
+    { code: "+65", flag: "🇸🇬", label: "Singapura" },
+    { code: "+966", flag: "🇸🇦", label: "Arab Saudi" },
+    { code: "+971", flag: "🇦🇪", label: "UAE" },
+    { code: "+44", flag: "🇬🇧", label: "Inggris" },
+    { code: "+1", flag: "🇺🇸", label: "Amerika" },
+];
+
+function parsePhone(full: string) {
+    const cleaned = full.startsWith("+") ? full : "+" + full;
+    const sorted = [...DIAL_CODES].sort((a, b) => b.code.length - a.code.length);
+    for (const { code } of sorted) {
+        if (cleaned.startsWith(code)) return { dialCode: code, local: cleaned.slice(code.length) };
+    }
+    return { dialCode: "+62", local: cleaned.replace(/^\+/, "") };
+}
 
 const NAME_MAX = 30;
 const BIO_MAX = 140;
@@ -17,7 +39,9 @@ export default function EditProfilePage() {
 
     const [name, setName] = useState("");
     const [bio, setBio] = useState("");
-    const [phone, setPhone] = useState("");
+    const [dialCode, setDialCode] = useState("+62");
+    const [localPhone, setLocalPhone] = useState("");
+    const [showDialPicker, setShowDialPicker] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
 
@@ -29,12 +53,17 @@ export default function EditProfilePage() {
             .then((d) => {
                 setName(d.name ?? "");
                 setBio(d.bio ?? "");
-                setPhone(d.phone ?? "");
+                if (d.phone) {
+                    const { dialCode: dc, local } = parsePhone(d.phone);
+                    setDialCode(dc);
+                    setLocalPhone(local);
+                }
             });
     }, [status]);
 
     const handleSave = async () => {
         setSaving(true);
+        const phone = localPhone ? dialCode + localPhone : "";
         await fetch("/api/user/profile", {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -137,26 +166,72 @@ export default function EditProfilePage() {
                     <h2 className="text-gray-900 font-bold text-lg mb-5">Informasi Kontak</h2>
 
                     {/* Phone */}
-                    <div className="flex gap-4 mb-5">
-                        <div className="flex flex-col w-24 shrink-0">
+                    <div className="flex gap-4 mb-5 items-end">
+                        {/* Tombol kode negara */}
+                        <div className="flex flex-col w-28 shrink-0">
                             <label className="text-gray-400 text-xs mb-1">Kode Negara</label>
-                            <input
-                                type="text"
-                                defaultValue="+62"
-                                className="border-b border-gray-300 focus:border-gray-900 outline-none text-gray-900 text-base pb-1 bg-transparent transition"
-                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowDialPicker(true)}
+                                className="flex items-center gap-1 border-b border-gray-300 pb-1 text-gray-900 text-base bg-transparent focus:outline-none"
+                            >
+                                <span>{DIAL_CODES.find(d => d.code === dialCode)?.flag}</span>
+                                <span className="font-medium">{dialCode}</span>
+                                <HiChevronDown size={14} className="text-gray-400 ml-auto" />
+                            </button>
                         </div>
+                        {/* Input nomor lokal */}
                         <div className="flex flex-col flex-1">
                             <label className="text-gray-400 text-xs mb-1">Nomor HP</label>
                             <input
                                 type="tel"
-                                value={phone}
-                                placeholder="08xxxxxxxxxx"
-                                onChange={(e) => setPhone(e.target.value)}
+                                value={localPhone}
+                                placeholder="8123456789"
+                                onChange={(e) => setLocalPhone(e.target.value.replace(/\D/g, ""))}
                                 className="border-b border-gray-300 focus:border-gray-900 outline-none text-gray-900 text-base pb-1 bg-transparent placeholder-gray-400 transition"
                             />
                         </div>
                     </div>
+
+                    {/* Preview nomor full */}
+                    {localPhone && (
+                        <p className="text-gray-400 text-xs -mt-3 mb-4">
+                            Nomor tersimpan: <span className="text-gray-700 font-medium">{dialCode}{localPhone}</span>
+                        </p>
+                    )}
+
+                    {/* Bottom-sheet popup kode negara */}
+                    {showDialPicker && typeof document !== "undefined" && createPortal(
+                        <>
+                            <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={() => setShowDialPicker(false)} />
+                            <div className="fixed inset-x-0 bottom-0 z-50 bg-white rounded-t-2xl shadow-2xl max-h-[70vh] flex flex-col">
+                                <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100 shrink-0">
+                                    <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto absolute left-1/2 -translate-x-1/2 top-2" />
+                                    <p className="font-bold text-gray-800 text-base">Pilih Kode Negara</p>
+                                    <button onClick={() => setShowDialPicker(false)} className="p-1 rounded-full hover:bg-gray-100 transition">
+                                        <HiX size={18} className="text-gray-500" />
+                                    </button>
+                                </div>
+                                <div className="overflow-y-auto flex-1 pb-6">
+                                    {DIAL_CODES.map((d) => (
+                                        <button
+                                            key={d.code}
+                                            type="button"
+                                            onClick={() => { setDialCode(d.code); setShowDialPicker(false); }}
+                                            className={`w-full flex items-center gap-4 px-5 py-3.5 text-left transition-colors ${dialCode === d.code ? "bg-blue-50" : "hover:bg-gray-50"
+                                                }`}
+                                        >
+                                            <span className="text-2xl">{d.flag}</span>
+                                            <span className={`flex-1 text-sm font-medium ${dialCode === d.code ? "text-blue-700" : "text-gray-700"}`}>{d.label}</span>
+                                            <span className={`text-sm font-semibold tabular-nums ${dialCode === d.code ? "text-blue-600" : "text-gray-400"}`}>{d.code}</span>
+                                            {dialCode === d.code && <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </>,
+                        document.body
+                    )}
 
                     {/* Email — readonly dari Google */}
                     <div>
