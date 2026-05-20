@@ -4,6 +4,10 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { HiOutlinePencil, HiOutlineTrash } from "react-icons/hi";
+import AdsCard from "@/components/theme/listing/ads-card";
+import type { FavoriteAd } from "./myads-list";
+import { formatDate } from "@/lib/format-date";
+import { toAdSlug } from "@/lib/ad-slug";
 
 type Tab = "ads" | "favourites";
 
@@ -18,7 +22,13 @@ type Ad = {
     created_at: string;
 };
 
-export default function MyAdsClient({ initialAds }: { initialAds: Ad[] }) {
+export default function MyAdsClient({
+    initialAds,
+    initialFavorites,
+}: {
+    initialAds: Ad[];
+    initialFavorites: FavoriteAd[];
+}) {
     const [activeTab, setActiveTab] = useState<Tab>("ads");
     const [myAds, setMyAds] = useState<Ad[]>(initialAds);
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -30,6 +40,9 @@ export default function MyAdsClient({ initialAds }: { initialAds: Ad[] }) {
         setMyAds((prev) => prev.filter((ad) => ad.id !== id));
         setDeletingId(null);
     };
+
+    // initialFavorites is already a flat array of ad objects
+    const favoriteAds = initialFavorites;
 
     return (
         <>
@@ -53,9 +66,28 @@ export default function MyAdsClient({ initialAds }: { initialAds: Ad[] }) {
             {/* ── Content ── */}
             <div className="flex flex-col gap-3 px-5">
                 {activeTab === "favourites" ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                        <p className="text-gray-400 text-sm">Belum ada favorit</p>
-                    </div>
+                    favoriteAds.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 text-center">
+                            <p className="text-gray-400 text-sm">Belum ada iklan yang difavoritkan</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-3">
+                            {favoriteAds.map((ad) => (
+                                <AdsCard
+                                    key={ad.id}
+                                    id={ad.id}
+                                    slug={toAdSlug(ad.title, ad.id)}
+                                    title={ad.title}
+                                    imageCover={ad.cover_image}
+                                    price={`EGP ${ad.price.toLocaleString()}`}
+                                    location={ad.lokasi}
+                                    time={formatDate(ad.created_at)}
+                                    initialFavorited={true}
+                                    isLoggedIn={true}
+                                />
+                            ))}
+                        </div>
+                    )
                 ) : myAds.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
                         <p className="text-gray-400 text-sm mb-2">Belum ada iklan</p>

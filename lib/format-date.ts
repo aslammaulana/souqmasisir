@@ -1,3 +1,6 @@
+import { formatDistanceToNow } from "date-fns";
+import { id as localeId } from "date-fns/locale";
+
 /**
  * Format a joined date string into a human-readable label.
  *
@@ -20,5 +23,15 @@ export function formatJoinDate(createdAt: string | null | undefined): string {
         day: "numeric",
         month: "short",
         year: "numeric",
+    });
+}
+
+/**
+ * Format date to relative "X time ago"
+ */
+export function formatDate(date: string | Date): string {
+    return formatDistanceToNow(new Date(date), {
+        addSuffix: true,
+        locale: localeId,
     });
 }

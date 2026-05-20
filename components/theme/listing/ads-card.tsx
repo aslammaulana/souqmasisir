@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { BsLightningChargeFill } from "react-icons/bs";
 import { FiHeart } from "react-icons/fi";
+import { useFavorite } from "@/hooks/useFavorite";
 
 type Props = {
-    id: string;
+    id: string; // The DATABASE UUID
     title: string;
     imageCover: string;
     price: string;
@@ -15,6 +16,9 @@ type Props = {
     highlight?: boolean;
     seller?: string;
     badge?: "super" | "verified" | "none";
+    initialFavorited?: boolean;
+    isLoggedIn?: boolean;
+    slug?: string; // Optional SEO slug
 };
 
 export default function AdsCard({
@@ -27,10 +31,16 @@ export default function AdsCard({
     highlight = false,
     seller,
     badge = "none",
+    initialFavorited = false,
+    isLoggedIn = false,
+    slug,
 }: Props) {
+    const { favorited, loading, toggle } = useFavorite(id, initialFavorited, isLoggedIn);
+    const navigatePath = slug || id;
+
     return (
         <Link
-            href={`/ads/${id}`}
+            href={`/ads/${navigatePath}`}
             className="flex flex-col rounded-lg overflow-hidden border-[1.5px] active:scale-[0.98] transition-transform duration-150"
             style={{
                 backgroundColor: highlight ? "#e6efff" : "#ffffff",
@@ -48,11 +58,16 @@ export default function AdsCard({
                 />
                 {/* Wishlist icon */}
                 <button
-                    className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-black/40"
-                    onClick={(e) => { e.preventDefault(); }}
-                    aria-label="Tambah ke wishlist"
+                    className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-black/40 transition-opacity disabled:opacity-60"
+                    onClick={toggle}
+                    disabled={loading}
+                    aria-label={favorited ? "Hapus dari wishlist" : "Tambah ke wishlist"}
                 >
-                    <FiHeart size={14} className="text-white" strokeWidth={2} />
+                    <FiHeart
+                        size={14}
+                        strokeWidth={2}
+                        className={favorited ? "text-red-500 fill-red-500" : "text-white"}
+                    />
                 </button>
             </div>
 

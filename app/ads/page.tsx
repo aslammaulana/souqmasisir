@@ -4,17 +4,22 @@ import AdsCard from "@/components/theme/listing/ads-card";
 import SearchPageClient from "@/components/search/search-page-client";
 import { formatDistanceToNow } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import { auth } from "@/lib/auth";
 
 type Props = { searchParams: Promise<{ q?: string }> };
 
 export default async function AdsSearchPage({ searchParams }: Props) {
     const { q } = await searchParams;
     const query = (q ?? "").trim();
+    const session = await auth();
+    const userEmail = session?.user?.email;
 
     let ads: {
         id: string; title: string; cover_image: string;
         price: number; lokasi: string; created_at: string;
     }[] = [];
+
+    let favoritedIds: Set<string> = new Set();
 
     if (query) {
         const { data } = await supabaseAdmin
@@ -28,6 +33,20 @@ export default async function AdsSearchPage({ searchParams }: Props) {
             .limit(40);
 
         ads = data ?? [];
+
+        if (userEmail && ads.length > 0) {
+            const { data: favs } = await supabaseAdmin
+                .from("favorites")
+                .select("ad_id")
+                .eq("user_email", userEmail);
+
+            if (favs) {
+                // Normalize stored IDs (handling potential slugs)
+                favoritedIds = new Set(favs.map(f =>
+                    f.ad_id.includes("--") ? f.ad_id.split("--").pop()! : f.ad_id
+                ));
+            }
+        }
     }
 
     return (
@@ -46,7 +65,8 @@ export default async function AdsSearchPage({ searchParams }: Props) {
                         {ads.map((ad) => (
                             <AdsCard
                                 key={ad.id}
-                                id={toAdSlug(ad.title, ad.id)}
+                                id={ad.id}
+                                slug={toAdSlug(ad.title, ad.id)}
                                 title={ad.title}
                                 imageCover={ad.cover_image}
                                 price={`EGP ${Number(ad.price).toLocaleString()}`}
@@ -55,6 +75,8 @@ export default async function AdsSearchPage({ searchParams }: Props) {
                                     addSuffix: true,
                                     locale: localeId,
                                 })}
+                                initialFavorited={favoritedIds.has(ad.id)}
+                                isLoggedIn={!!session}
                             />
                         ))}
                     </div>

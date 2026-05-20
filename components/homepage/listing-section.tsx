@@ -4,7 +4,12 @@ import { toAdSlug } from "@/lib/ad-slug";
 import { formatDistanceToNow } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 
-export default async function ListingSection() {
+type Props = {
+    favoritedIds: Set<string>;
+    isLoggedIn: boolean;
+};
+
+export default async function ListingSection({ favoritedIds, isLoggedIn }: Props) {
     const { data: ads } = await supabaseAdmin
         .from("ads")
         .select("id, title, cover_image, price, lokasi, created_at, status")
@@ -25,7 +30,8 @@ export default async function ListingSection() {
                     {list.map((ad) => (
                         <AdsCard
                             key={ad.id}
-                            id={toAdSlug(ad.title, ad.id)}
+                            id={ad.id}
+                            slug={toAdSlug(ad.title, ad.id)}
                             title={ad.title}
                             imageCover={ad.cover_image}
                             price={`EGP ${Number(ad.price).toLocaleString()}`}
@@ -34,6 +40,8 @@ export default async function ListingSection() {
                                 addSuffix: true,
                                 locale: localeId,
                             })}
+                            initialFavorited={favoritedIds.has(ad.id)}
+                            isLoggedIn={isLoggedIn}
                         />
                     ))}
                 </div>
