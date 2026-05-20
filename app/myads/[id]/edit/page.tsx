@@ -7,6 +7,7 @@ import { HiArrowLeft, HiX } from "react-icons/hi";
 import { HiOutlineCamera } from "react-icons/hi2";
 import { categories } from "@/components/post-ads/data";
 import WhatsAppSelector from "@/components/post-ads/WhatsAppSelector";
+import { convertToWebP } from "@/hooks/useImageConverter";
 
 const KONDISI_OPTIONS = ["Baru", "Bekas"];
 const LOKASI_OPTIONS = ["Hay Asyir", "Darrasah", "Hay Sabi", "Nasr City", "Abbasiyah"];
@@ -73,8 +74,9 @@ export default function EditAdPage({ params }: { params: Promise<{ id: string }>
     const handleUpload = async (key: PhotoKey, file: File) => {
         setUploadingKey(key);
         try {
+            const webpFile = await convertToWebP(file);
             const fd = new FormData();
-            fd.append("file", file);
+            fd.append("file", webpFile);
             const res = await fetch("/api/upload", { method: "POST", body: fd });
             const data = await res.json();
             if (data.url) {

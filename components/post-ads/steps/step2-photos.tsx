@@ -5,6 +5,7 @@ import Image from "next/image";
 import { HiOutlinePhoto } from "react-icons/hi2";
 import { HiPlus, HiX } from "react-icons/hi";
 import type { NewAdForm } from "@/components/post-ads/types";
+import { convertToWebP } from "@/hooks/useImageConverter";
 
 type Props = { form: NewAdForm; onChange: (u: Partial<NewAdForm>) => void };
 
@@ -26,12 +27,22 @@ export default function Step2Photos({ form, onChange }: Props) {
 
     const handleFile = async (key: PhotoKey, file: File) => {
         setUploading(key);
-        const fd = new FormData();
-        fd.append("file", file);
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        const data = await res.json();
-        if (data.url) onChange({ [key]: data.url } as Partial<NewAdForm>);
-        setUploading(null);
+        try {
+            const webpFile = await convertToWebP(file);
+            const fd = new FormData();
+            fd.append("file", webpFile);
+            const res = await fetch("/api/upload", { method: "POST", body: fd });
+            const data = await res.json();
+            if (data.url) {
+                onChange({ [key]: data.url } as Partial<NewAdForm>);
+            } else {
+                alert("Upload gagal: " + (data.error ?? "Unknown error"));
+            }
+        } catch (err) {
+            alert("Upload gagal: " + (err instanceof Error ? err.message : "Koneksi bermasalah"));
+        } finally {
+            setUploading(null);
+        }
     };
 
     return (
