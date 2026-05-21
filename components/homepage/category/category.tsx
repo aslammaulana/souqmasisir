@@ -5,7 +5,7 @@ import { categories } from "./data";
 export default function CategorySection() {
     return (
         <section className="w-full px-4 py-2 mt-5">
-            <div className="grid grid-cols-6 gap-x-3 gap-y-5">
+            <div className="grid grid-cols-5 gap-x-3 gap-y-5">
                 {categories.map((cat) => (
                     <Link
                         key={cat.id}
